@@ -74,7 +74,7 @@ class HPThresholdTracker:
         self.mode_button.grid(
             row=0,
             column=3,
-            padx=25,
+            padx=155,
             pady=(0, 8)
         )
 
