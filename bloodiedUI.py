@@ -18,6 +18,29 @@ class HPThresholdTracker:
 
         self.marker_options = []
 
+        self.condition_options = [
+            "Off-Guard",
+            "Prone",
+            "Persistent Damage",
+            "Grabbed",
+            "Restrained",
+            "Concealed",
+            "Hidden",
+            "Invisible",
+            "Flying",
+            "Frightened",
+            "Sickened",
+            "Clumsy",
+            "Drained",
+            "Doomed",
+            "Enfeebled",
+            "Slowed",
+            "Stupefied",
+            "Wounded",
+            "Dying",
+            "Special"
+        ]
+
         for color in ["RED", "ORANGE", "YELLOW", "GREEN", "BLUE", "PURPLE"]:
             for number in range(1, 10):
                 self.marker_options.append(f"{color} {number}")
@@ -87,6 +110,8 @@ class HPThresholdTracker:
         # Start with 5 enemies
         for _ in range(5):
             self.add_enemy()
+
+
 
     def get_status(self, max_hp, current_hp):
         if max_hp <= 0:
@@ -263,7 +288,7 @@ class HPThresholdTracker:
         thresholds_label = ttk.Label(
             self.enemies_frame,
             text="",
-            width=45
+            width=25
         )
 
         enemy = {
@@ -274,8 +299,17 @@ class HPThresholdTracker:
             "max_hp": max_hp_entry,
             "current_hp": current_hp_label,
             "status": status_label,
-            "thresholds": thresholds_label
+            "thresholds": thresholds_label,
+            "conditions": [],
+            "conditions_label": tk.Label(
+                self.enemies_frame,
+                text="",
+                anchor="w",
+                justify="left"
+            )
         }
+
+        self.update_conditions_display(enemy)
         enemy["minus10"] = minus10
         enemy["minus5"] = minus5
         enemy["minus2"] = minus2
@@ -308,16 +342,240 @@ class HPThresholdTracker:
             command=lambda e=enemy: self.mark_dead(e)
         )
 
+        conditions_button = ttk.Button(
+            self.enemies_frame,
+            text="Conditions",
+            command=lambda e=enemy: self.open_conditions_window(e)
+        )
+
+        enemy["conditions_button"] = conditions_button
+
         enemy["dead_button"] = dead_button
 
         self.enemy_rows.append(enemy)
 
         self.refresh_layout()
 
+    def open_conditions_window(self, enemy):
+        window = tk.Toplevel(self.root)
+        window.title(f"Conditions - {enemy['name'].get()}")
+
+        ttk.Label(
+            window,
+            text="Condition:"
+        ).grid(row=0, column=0, padx=5, pady=5)
+
+        condition_var = tk.StringVar(
+            value=self.condition_options[0]
+        )
+
+        ttk.Combobox(
+            window,
+            values=self.condition_options,
+            textvariable=condition_var,
+            state="readonly",
+            width=25
+        ).grid(
+            row=0,
+            column=1,
+            columnspan=6,
+            padx=5,
+            pady=5,
+            sticky="w"
+        )
+
+        listbox = tk.Listbox(
+            window,
+            width=40,
+            height=10
+        )
+
+        listbox.grid(
+            row=1,
+            column=0,
+            columnspan=7,
+            padx=5,
+            pady=5
+        )
+
+        def refresh_list():
+            listbox.delete(0, tk.END)
+
+            for condition, value in enemy["conditions"]:
+                if value is None:
+                    listbox.insert(
+                        tk.END,
+                        condition
+                    )
+                else:
+                    listbox.insert(
+                        tk.END,
+                        f"{condition} {value}"
+                    )
+
+        def add_or_increase(amount):
+            condition_name = condition_var.get()
+
+            for i, (condition, value) in enumerate(enemy["conditions"]):
+                if condition == condition_name:
+
+                    if value is None:
+                        if amount is not None:
+                            enemy["conditions"][i] = (
+                                condition,
+                                amount
+                            )
+
+                    else:
+                        if amount is not None:
+                            enemy["conditions"][i] = (
+                                condition,
+                                value + amount
+                            )
+
+                    self.update_conditions_display(enemy)
+                    refresh_list()
+                    return
+
+            enemy["conditions"].append(
+                (condition_name, amount)
+            )
+
+            self.update_conditions_display(enemy)
+            refresh_list()
+
+        def modify_selected(amount):
+            selection = listbox.curselection()
+
+            if not selection:
+                return
+
+            index = selection[0]
+
+            condition, value = enemy["conditions"][index]
+
+            if amount is None:
+                del enemy["conditions"][index]
+
+            elif value is None:
+                del enemy["conditions"][index]
+
+            else:
+                new_value = value - amount
+
+                if new_value <= 0:
+                    del enemy["conditions"][index]
+                else:
+                    enemy["conditions"][index] = (
+                        condition,
+                        new_value
+                    )
+
+            self.update_conditions_display(enemy)
+            refresh_list()
+
+        # ADD BUTTONS
+        ttk.Button(
+            window,
+            text="ADD",
+            command=lambda: add_or_increase(None)
+        ).grid(row=2, column=0, padx=2, pady=5)
+
+        ttk.Button(
+            window,
+            text="+1",
+            command=lambda: add_or_increase(1)
+        ).grid(row=2, column=1, padx=2)
+
+        ttk.Button(
+            window,
+            text="+2",
+            command=lambda: add_or_increase(2)
+        ).grid(row=2, column=2, padx=2)
+
+        ttk.Button(
+            window,
+            text="+3",
+            command=lambda: add_or_increase(3)
+        ).grid(row=2, column=3, padx=2)
+
+        ttk.Button(
+            window,
+            text="+4",
+            command=lambda: add_or_increase(4)
+        ).grid(row=2, column=4, padx=2)
+
+        ttk.Button(
+            window,
+            text="+5",
+            command=lambda: add_or_increase(5)
+        ).grid(row=2, column=5, padx=2)
+
+        # REMOVE BUTTONS
+        ttk.Button(
+            window,
+            text="REMOVE",
+            command=lambda: modify_selected(None)
+        ).grid(row=3, column=0, padx=2, pady=5)
+
+        ttk.Button(
+            window,
+            text="-1",
+            command=lambda: modify_selected(1)
+        ).grid(row=3, column=1, padx=2)
+
+        ttk.Button(
+            window,
+            text="-2",
+            command=lambda: modify_selected(2)
+        ).grid(row=3, column=2, padx=2)
+
+        ttk.Button(
+            window,
+            text="-3",
+            command=lambda: modify_selected(3)
+        ).grid(row=3, column=3, padx=2)
+
+        ttk.Button(
+            window,
+            text="-4",
+            command=lambda: modify_selected(4)
+        ).grid(row=3, column=4, padx=2)
+
+        ttk.Button(
+            window,
+            text="-5",
+            command=lambda: modify_selected(5)
+        ).grid(row=3, column=5, padx=2)
+
+        refresh_list()
+    
+    def update_conditions_display(self, enemy):
+        badges = []
+
+        for condition, value in enemy["conditions"]:
+            short = condition[:3]
+
+            if value is None:
+                badges.append(f"[{short}]")
+            else:
+                badges.append(f"[{short} {value}]")
+
+        enemy["conditions_label"].config(
+            text=" ".join(badges)
+        )
+
+        enemy["conditions_label"].config(
+            text=" ".join(badges)
+        )
+
     def mark_dead(self, enemy):
         name = enemy["name"].get() or "Unknown"
         max_hp = enemy["max_hp"].get() or "?"
-        current_hp = enemy["current_hp"].get() or "?"
+        current_hp = enemy["current_hp"].cget("text")
+
+        if current_hp == "-":
+            current_hp = "?"
 
         self.graveyard.append(
             f"{name} (Max:{max_hp}, Current:{current_hp})"
@@ -474,6 +732,12 @@ class HPThresholdTracker:
                 pady=3
             )
 
+            enemy["conditions_label"].grid(
+                row=i,
+                column=11,
+                sticky="w"
+            )
+
             enemy["max_hp"].grid(
                 row=i,
                 column=3,
@@ -526,13 +790,18 @@ class HPThresholdTracker:
             enemy["thresholds"].grid(
                 row=i,
                 column=10,
-                padx=10,
                 sticky="w"
+            )
+
+            enemy["conditions_button"].grid(
+                row=i,
+                column=12,
+                padx=5
             )
 
             enemy["dead_button"].grid(
                 row=i,
-                column=11,
+                column=13,
                 padx=5
             )
             
