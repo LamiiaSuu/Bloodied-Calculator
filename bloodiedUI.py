@@ -478,42 +478,49 @@ class HPThresholdTracker:
         ttk.Button(
             window,
             text="ADD",
+            width=15,
             command=lambda: add_or_increase(None)
         ).grid(row=2, column=0, padx=2, pady=5)
 
         ttk.Button(
             window,
             text="+1",
+            width=6,
             command=lambda: add_or_increase(1)
         ).grid(row=2, column=1, padx=2)
 
         ttk.Button(
             window,
             text="+2",
+            width=6,
             command=lambda: add_or_increase(2)
         ).grid(row=2, column=2, padx=2)
 
         ttk.Button(
             window,
             text="+3",
+            width=6,
             command=lambda: add_or_increase(3)
         ).grid(row=2, column=3, padx=2)
 
         ttk.Button(
             window,
             text="+4",
+            width=6,
             command=lambda: add_or_increase(4)
         ).grid(row=2, column=4, padx=2)
 
         ttk.Button(
             window,
             text="+5",
+            width=6,
             command=lambda: add_or_increase(5)
         ).grid(row=2, column=5, padx=2)
 
         # REMOVE BUTTONS
         ttk.Button(
             window,
+            width=15,
             text="REMOVE",
             command=lambda: modify_selected(None)
         ).grid(row=3, column=0, padx=2, pady=5)
@@ -521,30 +528,35 @@ class HPThresholdTracker:
         ttk.Button(
             window,
             text="-1",
+            width=6,
             command=lambda: modify_selected(1)
         ).grid(row=3, column=1, padx=2)
 
         ttk.Button(
             window,
             text="-2",
+            width=6,
             command=lambda: modify_selected(2)
         ).grid(row=3, column=2, padx=2)
 
         ttk.Button(
             window,
             text="-3",
+            width=6,
             command=lambda: modify_selected(3)
         ).grid(row=3, column=3, padx=2)
 
         ttk.Button(
             window,
             text="-4",
+            width=6,
             command=lambda: modify_selected(4)
         ).grid(row=3, column=4, padx=2)
 
         ttk.Button(
             window,
             text="-5",
+            width=6,
             command=lambda: modify_selected(5)
         ).grid(row=3, column=5, padx=2)
 
