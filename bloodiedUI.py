@@ -434,6 +434,10 @@ class HPThresholdTracker:
             enemy["dead_button"].destroy()
             enemy["marker_combo"].destroy()
             enemy["marker_display"].destroy()
+            enemy["minus10"].destroy()
+            enemy["minus5"].destroy()
+            enemy["minus2"].destroy()
+            enemy["minus1"].destroy()
 
         self.enemy_rows.clear()
         self.graveyard.clear()
